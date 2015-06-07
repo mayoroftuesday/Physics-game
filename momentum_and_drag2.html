@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML5 Test</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="vector.js" type="text/javascript"></script>
+    <script src="models.js" type="text/javascript"></script>
+</head>
+<body>
+    <table>
+        <tr valign="top">
+            <td>
+                <canvas id="myCanvas" height=500 width=500 style="border:2px solid black;" />
+            </td>
+            <td>
+                <a href="index.html">Home</a>
+                <h1>Momentum and Drag 2</h1>
+                <ul>
+                    <li>Use UP/DOWN/LEFT/RIGHT to move</li>
+                </ul>
+                <p>New Features</p>
+                <ul>
+                    <li>Momentum and drag using physical properties</li>
+                    <li>Improved bounding</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+	
+	
+    <script type="text/javascript">
+        var canvas = null;
+        var context = null;
+        var looper = null;
+        var pilot = null;
+        var worldFriction = 0.01;
+        var thrust = 1.0;
+
+        var currentThrust = new Vector(0,0);
+
+        $(document).ready(function ()
+        {
+            canvas = document.getElementById("myCanvas");
+            context = canvas.getContext("2d");
+
+            pilot = new ball(50, 50, 10, 10, 0, 0, 'blue');
+            draw();
+            go();
+        });
+
+        function draw()
+        {
+            pilot.draw(context);
+        }
+
+        function go()
+        {
+            looper = setInterval(animate, 30);
+        }
+
+        function animate()
+        {
+            update();
+            bounding();
+            clear();
+            draw();
+        }
+
+        function clear()
+        {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function update()
+        {
+            // acceleration will be thrust / mass
+            // friction will be friction coefficient * radius (air)
+            var frictionVector = new Vector(0, 0);
+            if (pilot.v.mag() > 0)
+            {
+                frictionVector = pilot.v.unit().scale(-1.0);
+            }
+            pilot.v = pilot.v
+                .add(currentThrust.scale(1.0 / pilot.m))
+                .add(frictionVector.scale(worldFriction * pilot.r / pilot.m));
+            pilot.move();
+        }
+
+        function bounding()
+        {
+            if (pilot.p.x <= pilot.r) { pilot.p.x = pilot.r; pilot.v.x *= -1; }
+            if (pilot.p.y <= pilot.r) { pilot.p.y = pilot.r; pilot.v.y *= -1; }
+            if (pilot.p.x >= canvas.width - pilot.r) { pilot.p.x = canvas.width - pilot.r; pilot.v.x *= -1; }
+            if (pilot.p.y >= canvas.height - pilot.r) { pilot.p.y = canvas.height - pilot.r; pilot.v.y *= -1; }
+        }
+
+        $(document.body).keydown(function (e)
+        {
+            switch (e.which)
+            {
+                case 37: currentThrust.x = -thrust; break; // left
+                case 38: currentThrust.y = -thrust; break; // up
+                case 39: currentThrust.x = thrust; break; // right
+                case 40: currentThrust.y = thrust; break; // down
+            }
+        });
+
+        $(document.body).keyup(function (e)
+        {
+            switch (e.which)
+            {
+                case 37: currentThrust.x = 0; break; // left
+                case 38: currentThrust.y = 0; break; // up
+                case 39: currentThrust.x = 0; break; // right
+                case 40: currentThrust.y = 0; break; // down
+            }
+        });
+
+        
+    </script>
+</body>
+</html>

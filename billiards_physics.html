@@ -1,0 +1,317 @@
+<!doctype html>
+<html>
+<head>
+<title>HTML5 Physics Test</title>
+</head>
+<body onload="init1()">
+	<table>
+        <tr valign="top">
+            <td>
+                <canvas id="myCanvas" width="500" height="300" style="border:1px solid black;">
+	            </canvas>
+	            <br />
+	            <button onclick="go();">Go</button>
+	            <button onclick="stop();">Stop</button>
+                <button onclick="animate();">Step</button>
+            </td>
+            <td>
+                <a href="index.html">Home</a>
+	            <h1>Billiards Physics</h1>
+                <button onclick="init1();">Test 1</button><br />
+                <button onclick="init2();">Test 2</button><br />
+                <button onclick="init3();">Test 3</button>
+            </td>
+        </tr>
+    </table>
+	
+	
+	<script type="text/javascript">
+	
+		var canvas = null;
+		var context = null;
+		var balls = [];
+		var looper = null;
+		 
+		function ball(x,y,r,m,vx,vy,c)
+		{
+		    this.p = [x, y];
+			this.r = r;
+			this.m = m;
+			this.v = [vx, vy];
+			this.p0 = [0, 0];
+			this.reset = reset;
+			function reset()
+			{
+			    this.p = this.p0;
+			}
+			this.move = move;
+			function move()
+			{
+			    this.p0 = this.p;
+			    this.p = vectorAdd(this.p, this.v);
+			}
+			this.color = c;
+		}
+	
+		function init1()
+		{
+			if (looper != null)
+			{
+				clearInterval(looper);
+			}
+			canvas = document.getElementById("myCanvas");
+			context = canvas.getContext("2d");
+
+			balls = [];
+			//                    x    y   r     m  vx  vy   color
+			balls[0] = new ball( 50,  50, 20,  4.0,  5,  0, 'black');
+			balls[1] = new ball(200,  67, 10,  1.0,  0,  3, 'blue');
+			balls[2] = new ball(250,  20, 10,  1.0,  0,  0, 'green');
+			balls[3] = new ball(100, 100, 10,  1.0,  0, -6, 'yellow');
+			balls[4] = new ball(200, 150, 30,  9.0,  0,  0, 'orange');
+			balls[5] = new ball( 75, 200, 10,  1.0,  2, -5, 'cyan');
+
+			clear();
+			draw();
+			go();
+		}
+		function init2()
+		{
+			if (looper != null)
+			{
+				clearInterval(looper);
+			}
+			canvas = document.getElementById("myCanvas");
+			context = canvas.getContext("2d");
+
+			balls = [];
+			//                    x    y   r     m  vx  vy   color
+			balls[0] = new ball(50, 250, 10, 1, 20, 0, 'black');
+			balls[1] = new ball(300, 250, 10, 1, 0, 0, 'blue');
+			balls[2] = new ball(320, 265, 10, 1, 0, 0, 'green');
+			balls[3] = new ball(320, 245, 10, 1, 0, 0, 'yellow');
+			balls[4] = new ball(340, 250, 10, 1, 0, 0, 'orange');
+            
+			clear();
+			draw();
+			go();
+		}
+		function init3()
+		{
+			if (looper != null)
+			{
+				clearInterval(looper);
+			}
+			canvas = document.getElementById("myCanvas");
+			context = canvas.getContext("2d");
+
+			balls = [];
+			//                    x    y   r     m  vx  vy   color
+			balls[0] = new ball(50, 250, 10, 1, 10, 0, 'black');
+			balls[1] = new ball(300, 250, 10, 1, 0, 0, 'blue');
+			balls[2] = new ball(320, 275, 10, 1, 0, 0, 'green');
+			balls[3] = new ball(220, 245, 15, 2, 0, 0, 'yellow');
+			balls[4] = new ball(340, 250, 15, 2, 0, 0, 'orange');
+			balls[5] = new ball(50, 100, 15, 2, 10, 0, 'black');
+			balls[6] = new ball(275, 130, 20, 5, 0, 0, 'blue');
+			balls[7] = new ball(320, 150, 20, 5, 0, 0, 'green');
+			balls[8] = new ball(320, 25, 20, 5, 0, 0, 'yellow');
+			balls[9] = new ball(340, 200, 25, 10, 0, 0, 'orange');
+			balls[10] = new ball(100, 50, 25, 10, 10, 0, 'black');
+			balls[11] = new ball(100, 260, 25, 10, 0, 0, 'blue');
+			balls[12] = new ball(400, 65, 30, 15, 0, 0, 'green');
+			balls[13] = new ball(420, 245, 30, 15, 0, 0, 'yellow');
+			balls[14] = new ball(440, 150, 30, 15, 0, 0, 'orange');
+			balls[15] = new ball(25, 200, 15, 2, 0, 5, 'red');
+			balls[16] = new ball(150, 150, 30, 15, 2, 3, 'purple');
+			balls[17] = new ball(125, 20, 10, 1, 0, 7, 'gray');
+			balls[18] = new ball(200, 40, 20, 5, -2, 4, 'pink');
+			balls[19] = new ball(475, 15, 10, 1, 0, 8, 'brown');
+			balls[20] = new ball(190, 150, 10, 1, -1, -1, 'gray');
+			balls[21] = new ball(450, 70, 10, 1, 1, 1, 'red');
+			
+			clear();
+			draw();
+			go();
+		}
+		
+		function go()
+		{
+			if (looper != null)
+			{
+				clearInterval(looper);
+			}
+			looper = setInterval(animate, 30);
+		}
+		function stop()
+		{
+			clearInterval(looper);
+		}
+		
+		function animate()
+		{
+			update();
+			resolveCollisions();
+			bounding();
+			clear();
+			draw();
+		}
+		
+		function clear()
+		{
+			context.clearRect(0, 0, canvas.width, canvas.height);
+		}
+
+		function resolveCollisions()
+		{
+			for (var i = 0; i < balls.length; i++)
+			{
+				ballA = balls[i];
+				for (var j = i+1; j < balls.length; j++)
+				{
+					ballB = balls[j];
+					if (isCollision(ballA, ballB))
+					{
+					    doCollision(ballA, ballB);
+					}
+				}
+			}
+		}
+
+        function isCollision(ballA, ballB)
+        {
+            return mag(vectorSub(ballA.p, ballB.p)) < ballA.r + ballB.r;
+        }
+
+		function bounding()
+		{
+		    for (var i = 0; i < balls.length; i++)
+		    {
+		        b = balls[i];
+		        if (b.p[0] <= b.r) { b.reset(); b.v[0] *= -1; }
+		        if (b.p[1] <= b.r) { b.reset(); b.v[1] *= -1; }
+		        if (b.p[0] >= canvas.width - b.r) { b.reset(); b.v[0] *= -1; }
+		        if (b.p[1] >= canvas.height - b.r) { b.reset(); b.v[1] *= -1; }
+		    }
+		}
+
+		function doCollision(a, b)
+		{
+		    a.reset();
+		    b.reset();
+
+            // find normal vector n[] at collision plane
+		    var n = vectorSub(a.p, b.p);
+		    var distance = mag(n);
+            normalize(n);
+            var negN = scalarMultiply(-1, n);
+
+            // find normal components of each velocity vector
+            var nA = scalarMultiply(dotProduct(a.v, negN), negN);
+            var nB = scalarMultiply(dotProduct(b.v, n), n);
+
+            // first, de-overlap the balls if they are overlapped (usually the case unless they are exactly tangent)
+            var totalDistanceToMove = distance - a.r - b.r;
+            var vAMag = mag(a.v);
+            var vBMag = mag(b.v);
+            var nAMag = mag(nA);
+            var nBMag = mag(nB);
+            if (vAMag > 0)
+            {
+                a.p = vectorAdd(a.p, scalarMultiply(totalDistanceToMove * nAMag / (nAMag + nBMag) / vAMag, a.v));
+            }
+            if (vBMag > 0)
+            {
+                b.p = vectorAdd(b.p, scalarMultiply(totalDistanceToMove * nBMag / (nAMag + nBMag) / vBMag, b.v));
+            }
+
+            // redo since move: find normal vector n[] at collision plane
+            n = vectorSub(a.p, b.p);
+            distance = mag(n);
+            normalize(n);
+            negN = scalarMultiply(-1, n);
+
+            // redo since move: find normal components of each velocity vector
+            nA = scalarMultiply(dotProduct(a.v, negN), negN);
+            nB = scalarMultiply(dotProduct(b.v, n), n);
+
+            // find tangential components of each velocity vector
+            var tA = vectorSub(a.v, nA);
+            var tB = vectorSub(b.v, nB);
+
+            // find new normal vectors using the elastic collision equation v1' = v1*(m1-m2)/(m1+m2) + v2*(2*m2/(m1+m2))
+            var newNA = vectorAdd(scalarMultiply((a.m - b.m) * 1.0 / (a.m + b.m), nA), scalarMultiply(2.0 * b.m / (a.m + b.m), nB));
+            var newNB = vectorAdd(scalarMultiply((b.m - a.m) * 1.0 / (a.m + b.m), nB), scalarMultiply(2.0 * a.m / (a.m + b.m), nA));
+
+            // result vector equals the ball's own tangent vector plus the new normal vector
+            a.v = vectorAdd(tA, newNA);
+            b.v = vectorAdd(tB, newNB);
+		}
+
+		function update()
+		{
+			for (var i = 0; i < balls.length; i++)
+			{
+				var b = balls[i];
+				b.move();
+			}
+		}
+		
+		function draw()
+		{
+			for (var i = 0; i < balls.length; i++)
+			{
+			    var b = balls[i];
+			    context.beginPath();
+			    context.fillStyle = b.color;
+			    context.arc(b.p[0], b.p[1], b.r, 0, 2 * Math.PI);
+			    context.closePath();
+			    context.fill();
+			}
+		}
+
+        /* Vector Math */
+        function mag(u)
+        {
+            return Math.sqrt(u[0] * u[0] + u[1] * u[1]);
+        }
+        function normalize(u)
+        {
+            var magnitude = mag(u);
+            u[0] = u[0] * 1.0 / magnitude;
+            u[1] = u[1] * 1.0 / magnitude;
+        }
+
+        function dotProduct(u, v)
+        {
+            return u[0] * v[0] + u[1] * v[1];
+        }
+
+        function scalarMultiply(x, u)
+        {
+            var w = [];
+            w[0] = u[0] * x;
+            w[1] = u[1] * x;
+            return w;
+        }
+
+        function vectorSub(u, v)
+        {
+            var w = [];
+            w[0] = u[0] - v[0];
+            w[1] = u[1] - v[1];
+            return w;
+        }
+
+        function vectorAdd(u, v)
+        {
+            var w = [];
+            w[0] = u[0] + v[0];
+            w[1] = u[1] + v[1];
+            return w;
+        }
+
+	
+	</script>
+</body>
+</html>

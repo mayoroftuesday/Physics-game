@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML5 Test</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="vector.js" type="text/javascript"></script>
+    <script src="models2.js" type="text/javascript"></script>
+</head>
+<body>
+    <table>
+    <tr valign="top">
+        <td>
+            <canvas id="myCanvas" height=500 width=500 style="border:2px solid black;" />
+        </td>
+        <td>
+            <a href="index.html">Home</a>
+            <h1>Pilot</h1>
+            <ul>
+                <li>Use LEFT/RIGHT to rotate</li>
+                <li>Use UP/DOWN to thrust</li>
+            </ul>
+            <p>New Features</p>
+            <ul>
+                <li>Polar thrust (vs. cartesian)</li>
+                <li>Prototype inheritence</li>
+                <li>Gradient fill</li>
+                <li>Matrix transformations</li>
+            </ul>
+        </td>
+    </tr>
+    </table>
+    
+    <script type="text/javascript">
+        var canvas = null;
+        var context = null;
+        var looper = null;
+        var me = null;
+        var worldFriction = 0.01;
+        var thrust = 1.0;
+        var rotateSpeed = Math.PI / 45;
+
+        //var currentThrust = new Vector(0,0);
+        var currentThrust = 0;
+        var currentRotate = 0;
+
+        $(document).ready(function ()
+        {
+            canvas = document.getElementById("myCanvas");
+            context = canvas.getContext("2d");
+
+            me = new pilot(50, 50, 10, 10, 0, 0, 'red');
+            draw();
+            go();
+        });
+
+        function draw()
+        {
+            me.draw(context);
+        }
+
+        function go()
+        {
+            looper = setInterval(animate, 30);
+        }
+
+        function animate()
+        {
+            update();
+            bounding();
+            clear();
+            draw();
+        }
+
+        function clear()
+        {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function update()
+        {
+            // rotation
+            me.heading += currentRotate;
+            while (me.heading < 0) { me.heading += twoPI; }
+            while (me.heading > twoPI) { me.heading -= twoPI; }
+
+            var thrustVector = new Vector(0, 0);
+            if (currentThrust != 0)
+            {
+                thrustVector.x = currentThrust * Math.cos(me.heading);
+                thrustVector.y = currentThrust * Math.sin(me.heading);
+            }
+
+            // acceleration will be thrust / mass
+            // friction will be friction coefficient * radius (air)
+            var frictionVector = new Vector(0, 0);
+            if (me.v.mag() > 0)
+            {
+                frictionVector = me.v.unit().scale(-1.0);
+            }
+            me.v = me.v
+                .add(thrustVector.scale(1.0 / me.m))
+                .add(frictionVector.scale(worldFriction * me.r / me.m));
+            me.move();
+        }
+
+        function bounding()
+        {
+            if (me.p.x <= me.r) { me.p.x = me.r; me.v.x *= -1; }
+            if (me.p.y <= me.r) { me.p.y = me.r; me.v.y *= -1; }
+            if (me.p.x >= canvas.width - me.r) { me.p.x = canvas.width - me.r; me.v.x *= -1; }
+            if (me.p.y >= canvas.height - me.r) { me.p.y = canvas.height - me.r; me.v.y *= -1; }
+        }
+
+        $(document.body).keydown(function (e)
+        {
+            switch (e.which)
+            {
+                // rotate
+                case 37: currentRotate = -rotateSpeed; break; // left
+                case 39: currentRotate = rotateSpeed; break; // right
+
+                // thrust
+                case 38: currentThrust = thrust; break; // up
+                case 40: currentThrust = -thrust; break; // down
+            }
+        });
+
+        $(document.body).keyup(function (e)
+        {
+            switch (e.which)
+            {
+                // rotate
+                case 37: currentRotate = 0; break; // left
+                case 39: currentRotate = 0; break; // right
+
+                // thrust
+                case 38: currentThrust = 0; break; // up
+                case 40: currentThrust = 0; break; // down
+            }
+        });
+
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+<title>HTML5 Physics Test</title>
+</head>
+<body onload="init()">
+    <table>
+        <tr valign="top">
+            <td>
+	            <canvas id="myCanvas" width="500" height="300" style="border:1px solid black;">
+	            </canvas>
+	            <br>
+	            <button onclick="go();">Go</button>
+	            <button onclick="stop();">Stop</butto>
+            </td>
+            <td>
+                <a href="index.html">Home</a>
+	            <h1>Simple Collisions</h1>
+                <p>New Features</p>
+                <ul>
+                    <li>n number of independent agents</li>
+                    <li>Linear collision detection and resolution</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+	
+	<script type="text/javascript">
+	
+		var canvas = null;
+		var context = null;
+		var balls = [];
+		var looper = null;
+		 
+		function ball(x,y,r,m,vx,vy)
+		{
+			this.x = x;
+			this.y = y;
+			this.r = r;
+			this.m = m;
+			this.vx = vx;
+			this.vy = vy;
+			this.x0 = 0;
+			this.y0 = 0;
+			this.reset = reset;
+			function reset()
+			{
+				this.x = this.x0;
+				this.y = this.y0;
+			}
+			this.move = move;
+			function move()
+			{
+				this.x0 = this.x;
+				this.y0 = this.y;
+				this.x += this.vx;
+				this.y += this.vy;
+			}
+		}
+	
+		function init()
+		{
+			canvas = document.getElementById("myCanvas");
+			context = canvas.getContext("2d");
+		
+			balls[0] = new ball(50, 50, 10, 1, 5, 0);
+			balls[1] = new ball(200, 50, 10, 1, 0, 0);
+			balls[2] = new ball(250, 50, 10, 1, -5, 0);
+			balls[3] = new ball(300, 50, 10, 1, 0, 0);
+			balls[4] = new ball(400, 50, 10, 1, 10, 0);
+			
+			draw();
+			go();
+		}
+		
+		function go()
+		{
+			looper = setInterval(animate, 30);
+		}
+		function stop()
+		{
+			clearInterval(looper);
+		}
+		
+		function animate()
+		{
+			clear();
+			update();
+			resolveCollisions();
+			draw();
+		}
+		
+		function clear()
+		{
+			context.clearRect(0, 0, canvas.width, canvas.height);
+		}
+
+		function resolveCollisions()
+		{
+			for (var i = 0; i < balls.length; i++)
+			{
+				ballA = balls[i];
+				for (var j = i+1; j < balls.length; j++)
+				{
+					ballB = balls[j];
+					if (Math.abs(ballB.x - ballA.x) < ballB.r + ballA.r)
+					{
+						// collision!
+						ballA.reset();
+						ballB.reset();
+						
+						var tmp = ballB.vx;
+						ballB.vx = ballA.vx;
+						ballA.vx = tmp;
+					}
+				}
+			}
+			
+			for(var i = 0; i < balls.length; i++)
+			{
+				b = balls[i];
+				if (b.x < b.r) 
+				{ 
+					b.vx *= -1;
+				}
+				if (b.x > canvas.width - b.r) 
+				{ 
+					b.vx *= -1; 
+				}
+			}
+		}
+		
+		function update()
+		{
+			for (var i = 0; i < balls.length; i++)
+			{
+				var b = balls[i];
+				b.move();
+			}
+		}
+		
+		function draw()
+		{
+			context.beginPath();
+			for (var i = 0; i < balls.length; i++)
+			{
+				var b = balls[i];
+				context.arc(b.x, b.y, b.r, 0, 2*Math.PI);
+			}
+			context.closePath();
+			context.fill();
+		}
+	
+	</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+﻿<!doctype html />
+<html>
+<head>
+<script src="vector.js" type="text/javascript"></script>
+<title>Vector Math</title>
+</head>
+<body onload="main();">
+	<table>
+        <tr valign="top">
+            <td>
+                <textarea id="output" rows=50 cols=50></textarea>
+            </td>
+            <td>
+                <a href="index.html">Home</a>
+	            <h1>Vector Math</h1>
+                <p>New Features</p>
+                <ul>
+                    <li>Vector class</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <script type="text/javascript">
+
+        var output = document.getElementById("output");
+
+        function writeOut(str)
+        {
+            output.value += str + "\n";
+        }
+        function writeVal(vari, valu)
+        {
+            writeOut(vari + " = " + valu);
+        }
+
+        function main()
+        {
+            var u = new Vector(1, 2);
+            var v = new Vector(10, 20);
+            writeVal("u", u.toString());
+            writeVal("v", v.toString());
+
+            // addition
+            var w = u.add(v);
+            writeOut("Vector Addition");
+            writeVal("u+v", w.toString());
+
+            // subtraction
+            w = u.sub(v);
+            writeOut("Vector Substraction");
+            writeVal("u-v", w.toString());
+
+            // magnitude
+            writeOut("Magnitude");
+            writeVal("|u|", u.mag());
+
+            // dot product
+            writeOut("Dot Product");
+            writeVal("u*v", u.dot(v));
+
+            // normalize
+            writeOut("Unit Vector");
+            w = v.unit();
+            writeVal("v/|v|", w.toString());
+
+            // scale
+            writeOut("Scale");
+            w = v.scale(50);
+            writeVal("50v", w.toString());
+
+            // scale
+            writeOut("Normal");
+            w = v.norm();
+            writeVal("norm(v)", w.toString());
+        }
+    </script>
+</body>
+</html>

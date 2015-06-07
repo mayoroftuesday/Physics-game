@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML5 Test</title>
+    <!--<script type="text/javascript" src="jquery-1.9.1.min.js"></script>-->
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    
+</head>
+<body>
+    <table>
+    <tr valign="top">
+        <td>
+            <canvas id="myCanvas" height=500 width=500 style="border:2px solid black;" />
+        </td>
+        <td>
+            <a href="index.html">Home</a>
+            <h1>Momentum and Drag</h1>
+            <ul>
+                <li>Use UP/DOWN/LEFT/RIGHT to move</li>
+            </ul>
+            <p>New Features</p>
+            <ul>
+                <li>Canvas drawing field</li>
+                <li>Keyboard support</li>
+                <li>Continuous motion and drag</li>
+            </ul>
+            X: <input type="text" id="dispX" /><br />
+            Y: <input type="text" id="dispY" /><br />
+            Vx: <input type="text" id="dispVx" /><br />
+            Vy: <input type="text" id="dispVy" /><br />
+            Tx: <input type="text" id="dispTx" /><br />
+            Ty: <input type="text" id="dispTy" /><br />
+            key: <input type="text" id="dispKey" /><br />
+            frame: <input type="text" id="dispFrame" /><br />
+        </td>
+    </tr>
+    </table>
+    
+    <script type="text/javascript">
+        var x = 0;
+        var y = 0;
+        var c = null;
+        var ctx = null;
+        var size = 25;
+        var dThrust = .1;
+        var xThrust = 0;
+        var yThrust = 0;
+        var xVelocity = 0;
+        var yVelocity = 0;
+        var frame = 0;
+        var friction = 1 - 2.0/100.0;
+        var collisionFriction = 0.75;
+        var canvasSize = 500;
+
+        $(document).ready(function() {
+            c = document.getElementById("myCanvas");
+            ctx = c.getContext("2d");
+            ctx.fillStyle = "#000000";
+            drawLoop();
+        });
+
+        $(document.body).keydown(function (e)
+        {
+            switch (e.which)
+            {
+                case 37: xThrust = -dThrust; break; // left
+                case 38: yThrust = -dThrust; break; // up
+                case 39: xThrust = dThrust; break; // right
+                case 40: yThrust = dThrust; break; // down
+            }
+
+            $("#dispKey").val(e.which);
+            $("#dispTx").val(xThrust);
+            $("#dispTy").val(yThrust);
+        });
+
+        $(document.body).keyup(function (e)
+        {
+            switch (e.which)
+            {
+                case 37: xThrust = 0; break; // left
+                case 38: yThrust = 0; break; // up
+                case 39: xThrust = 0; break; // right
+                case 40: yThrust = 0; break; // down
+            }
+
+            $("#dispTx").val(xThrust);
+            $("#dispTy").val(yThrust);
+        });
+
+        function calcNewPosition()
+        {
+            if (xThrust != 0)
+            {
+                xVelocity += xThrust;;
+            }
+            else
+            {
+                xVelocity *= friction;
+            }
+            if (yThrust != 0)
+            {
+                yVelocity += yThrust;
+            }
+            else
+            {
+                yVelocity *= friction;
+            }
+
+            x += xVelocity;
+            y += yVelocity;
+
+            if (x <= 0) { x = 0; xVelocity *= -1 * collisionFriction; }
+            if (x >= canvasSize - size) { x = canvasSize - size; xVelocity *= -1 * collisionFriction; }
+            if (y <= 0) { y = 0; yVelocity *= -1 * collisionFriction; }
+            if (y >= canvasSize - size) { y = canvasSize - size; yVelocity *= -1 * collisionFriction; }
+
+            $("#dispVx").val(xVelocity);
+            $("#dispVy").val(yVelocity);
+            $("#dispX").val(x);
+            $("#dispY").val(y);
+        }
+
+        function drawLoop()
+        {
+            frame++;
+            clearRect();
+            calcNewPosition();
+            drawRect();
+            $("#dispFrame").val(frame);
+            window.setTimeout("drawLoop();", 1000 / 60);
+        }
+
+        function drawRect()
+        {
+            ctx.fillRect(x, y, size, size);
+        }
+        function clearRect()
+        {
+            ctx.clearRect(0, 0, canvasSize, canvasSize);
+        }
+
+    </script>
+</body>
+</html>

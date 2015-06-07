@@ -1,0 +1,268 @@
+<!doctype html>
+<html>
+<head>
+    <title>HTML5 Physics Test</title>
+    <script src="vector.js" type="text/javascript"></script>
+    <script src="models3.js" type="text/javascript"></script>
+</head>
+<body onload="init1()">
+	<table>
+        <tr valign="top">
+            <td>
+                <canvas id="myCanvas" width="500" height="300" style="border:1px solid black;">
+	            </canvas>
+	            <br />
+	            <button onclick="go();">Go</button>
+	            <button onclick="stop();">Stop</button>
+                <button onclick="animate();">Step</button>
+            </td>
+            <td>
+                <a href="index.html">Home</a>
+	            <h1>Billiards Physics 2</h1>
+                <button onclick="init1();">Test 1</button><br />
+                <button onclick="init2();">Test 2</button><br />
+                <button onclick="init3();">Test 3</button>
+            </td>
+        </tr>
+    </table>
+	
+	
+	<script type="text/javascript">
+	
+		var canvas = null;
+		var context = null;
+		var balls = [];
+		var looper = null;
+		var worldFriction = 0.005;
+		var agentCollisionDampening = 0.2;
+		var wallCollisionDampening = 0.2;
+			
+		function init1()
+		{
+			if (looper != null)
+			{
+				clearInterval(looper);
+			}
+			canvas = document.getElementById("myCanvas");
+			context = canvas.getContext("2d");
+
+			balls = [];
+			//                    x    y   r     m  vx  vy   color
+			balls[0] = new agent( 50,  50, 20,  4.0,  5,  0, 'white');
+			balls[1] = new agent(200,  67, 10,  1.0,  0,  3, 'blue');
+			balls[2] = new agent(250,  20, 10,  1.0,  0,  0, 'green');
+			balls[3] = new agent(100, 100, 10,  1.0,  0, -6, 'yellow');
+			balls[4] = new agent(200, 150, 30,  9.0,  0,  0, 'orange');
+			balls[5] = new agent( 75, 200, 10,  1.0,  2, -5, 'cyan');
+
+			clear();
+			draw();
+			go();
+		}
+		function init2()
+		{
+			if (looper != null)
+			{
+				clearInterval(looper);
+			}
+			canvas = document.getElementById("myCanvas");
+			context = canvas.getContext("2d");
+
+			balls = [];
+			//                    x    y   r     m  vx  vy   color
+			balls[0] = new agent(50, 250, 10, 1, 20, 0, 'white');
+			balls[1] = new agent(300, 250, 10, 1, 0, 0, 'blue');
+			balls[2] = new agent(320, 265, 10, 1, 0, 0, 'green');
+			balls[3] = new agent(320, 245, 10, 1, 0, 0, 'yellow');
+			balls[4] = new agent(340, 250, 10, 1, 0, 0, 'orange');
+            
+			clear();
+			draw();
+			go();
+		}
+		function init3()
+		{
+			if (looper != null)
+			{
+				clearInterval(looper);
+			}
+			canvas = document.getElementById("myCanvas");
+			context = canvas.getContext("2d");
+
+			balls = [];
+			//                    x    y   r     m  vx  vy   color
+			balls[0] = new agent(50, 250, 10, 1, 10, 0, 'white');
+			balls[1] = new agent(300, 250, 10, 1, 0, 0, 'blue');
+			balls[2] = new agent(320, 275, 10, 1, 0, 0, 'green');
+			balls[3] = new agent(220, 245, 15, 2, 0, 0, 'yellow');
+			balls[4] = new agent(340, 250, 15, 2, 0, 0, 'orange');
+			balls[5] = new agent(50, 100, 15, 2, 10, 0, 'white');
+			balls[6] = new agent(275, 130, 20, 5, 0, 0, 'blue');
+			balls[7] = new agent(320, 150, 20, 5, 0, 0, 'green');
+			balls[8] = new agent(320, 25, 20, 5, 0, 0, 'yellow');
+			balls[9] = new agent(340, 200, 25, 10, 0, 0, 'orange');
+			balls[10] = new agent(100, 50, 25, 10, 10, 0, 'white');
+			balls[11] = new agent(100, 260, 25, 10, 0, 0, 'blue');
+			balls[12] = new agent(400, 65, 30, 15, 0, 0, 'green');
+			balls[13] = new agent(420, 245, 30, 15, 0, 0, 'yellow');
+			balls[14] = new agent(440, 150, 30, 15, 0, 0, 'orange');
+			balls[15] = new agent(25, 200, 15, 2, 0, 5, 'red');
+			balls[16] = new agent(150, 150, 30, 15, 2, 3, 'purple');
+			balls[17] = new agent(125, 20, 10, 1, 0, 7, 'gray');
+			balls[18] = new agent(200, 40, 20, 5, -2, 4, 'pink');
+			balls[19] = new agent(475, 15, 10, 1, 0, 8, 'brown');
+			balls[20] = new agent(190, 150, 10, 1, -1, -1, 'gray');
+			balls[21] = new agent(450, 70, 10, 1, 1, 1, 'red');
+			
+			clear();
+			draw();
+			go();
+		}
+		
+		function go()
+		{
+			if (looper != null)
+			{
+				clearInterval(looper);
+			}
+			looper = setInterval(animate, 30);
+		}
+		function stop()
+		{
+			clearInterval(looper);
+		}
+		
+		function animate()
+		{
+			update();
+			resolveCollisions();
+			bounding();
+			clear();
+			draw();
+		}
+		
+		function clear()
+		{
+		    context.fillStyle = 'black';
+			context.fillRect(0, 0, canvas.width, canvas.height);
+		}
+
+		function resolveCollisions()
+		{
+			for (var i = 0; i < balls.length; i++)
+			{
+				ballA = balls[i];
+				for (var j = i+1; j < balls.length; j++)
+				{
+					ballB = balls[j];
+					if (isCollision(ballA, ballB))
+					{
+					    doCollision(ballA, ballB);
+					}
+				}
+			}
+		}
+
+        function isCollision(ballA, ballB)
+        {
+            return ballA.p.sub(ballB.p).mag() < ballA.r + ballB.r;
+        }
+
+		function bounding()
+		{
+		    for (var i = 0; i < balls.length; i++)
+		    {
+		        b = balls[i];
+		        var hit = false;
+
+		        if (b.p.x <= b.r) { b.p.x = b.r; b.v.x *= -1; hit = true;}
+		        if (b.p.y <= b.r) { b.p.y = b.r; b.v.y *= -1; hit = true; }
+		        if (b.p.x >= canvas.width - b.r) { b.p.x = canvas.width - b.r; b.v.x *= -1; hit = true; }
+		        if (b.p.y >= canvas.height - b.r) { b.p.y = canvas.height - b.r; b.v.y *= -1; hit = true; }
+
+		        if (hit)
+		        {
+		            b.v = b.v.scale(1.0 - wallCollisionDampening);
+		        }
+		    }
+		}
+
+		function doCollision(a, b)
+		{
+		    a.reset();
+		    b.reset();
+
+            // find normal vector n[] at collision plane
+		    var n = a.p.sub(b.p);
+		    var distance = n.mag();
+		    n = n.unit();
+		    var negN = n.scale(-1);
+
+            // find normal components of each velocity vector
+            var nA = negN.scale(a.v.dot(negN));
+            var nB = n.scale(b.v.dot(n));
+
+            // first, de-overlap the balls if they are overlapped (usually the case unless they are exactly tangent)
+            var totalDistanceToMove = distance - a.r - b.r;
+            var vAMag = a.v.mag();
+            var vBMag = b.v.mag();
+            var nAMag = nA.mag();
+            var nBMag = nB.mag();
+            if (vAMag > 0)
+            {
+                a.p = a.p.add(a.v.scale(totalDistanceToMove * nAMag / (nAMag + nBMag) / vAMag));
+            }
+            if (vBMag > 0)
+            {
+                b.p = b.p.add(b.v.scale(totalDistanceToMove * nBMag / (nAMag + nBMag) / vBMag));
+            }
+
+            // redo since move: find normal vector n[] at collision plane
+            n = a.p.sub(b.p);
+            distance = n.mag();
+            n = n.unit();
+            negN = n.scale(-1);
+
+            // redo since move: find normal components of each velocity vector
+            nA = negN.scale(a.v.dot(negN));
+            nB = n.scale(b.v.dot(n));
+
+            // find tangential components of each velocity vector
+            var tA = a.v.sub(nA);
+            var tB = b.v.sub(nB);
+
+            // find new normal vectors using the elastic collision equation 
+            // v1' = v1*(m1-m2)/(m1+m2) + v2*(2*m2/(m1+m2))
+            var newNA =
+                nA.scale((a.m - b.m) * 1.0 / (a.m + b.m)).add(
+                nB.scale(2.0 * b.m / (a.m + b.m)));
+            var newNB =
+                nB.scale((b.m - a.m) * 1.0 / (a.m + b.m)).add(
+                nA.scale(2.0 * a.m / (a.m + b.m)));
+
+            // result vector equals the ball's own tangent vector plus the new normal vector
+            a.v = tA.add(newNA).scale(1.0 - agentCollisionDampening);
+            b.v = tB.add(newNB).scale(1.0 - agentCollisionDampening);
+		}
+
+		function update()
+		{
+			for (var i = 0; i < balls.length; i++)
+			{
+			    var b = balls[i];
+			    b.move(worldFriction);
+			}
+		}
+		
+		function draw()
+		{
+			for (var i = 0; i < balls.length; i++)
+			{
+			    var b = balls[i];
+			    b.draw(context);
+			}
+		}
+	
+	</script>
+</body>
+</html>

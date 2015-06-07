@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+    <title>Wall Physics</title>
+    <script src="vector2.js" type="text/javascript"></script>
+    <script src="models4.js" type="text/javascript"></script>
+</head>
+<body onload="init();">
+
+    <table>
+        <tr valign="top">
+            <td>
+                <canvas id="myCanvas" width="500" height="300" style="border:1px solid black;"></canvas><br />
+                <button onclick="go();">Go</button>
+                <button onclick="stop();">Stop</button>
+                <button onclick="animate();">Step</button>
+            </td>
+            <td>
+                <a href="index.html">Home</a>
+	            <h1>Wall Physics 2</h1>
+                <p>New Features</p>
+                <ul>
+                    <li>Better class organization</li>
+                    <li>Structures made of several walls</li>
+                    <li>Solid drawn structures</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+	
+    
+    
+    <script type="text/javascript">
+
+        var canvas = null;
+        var context = null;
+        var looper = null;
+        var b = null;
+        var walls = [];
+        var worldFriction = 0.000;
+        var wallCollisionDampening = 0.0;
+
+        function init()
+        {
+            canvas = document.getElementById("myCanvas");
+            context = canvas.getContext("2d");
+
+            b = new Agent(new Point(50, 50), 10, 1, new Vector(5, 0), 'blue');
+
+            //walls[0] = new Wall(new Point(300, 30), new Point(325, 90));
+            //walls[1] = new Wall(new Point(325, 90), new Point(325, 150));
+            //walls[2] = new Wall(new Point(325, 150), new Point(275, 150));
+            //walls[3] = new Wall(new Point(275, 150), new Point(300, 30));
+            //walls[4] = new Wall(new Point(300, 300), new Point(500, 200));
+            //walls[5] = new Wall(new Point(0, 200), new Point(300, 300));
+
+            walls[0] = new Wall(new Point(100, 50), new Point(200, 0));
+            walls[1] = new Wall(new Point(100, 50), new Point(200, 100));
+            
+            draw();
+            go();
+        }
+
+        function draw()
+        {
+            b.draw(context);
+            for (var i = 0; i < walls.length; i++)
+            {
+                walls[i].draw(context);
+            }
+        }
+
+        function go()
+        {
+            looper = setInterval(animate, 30);
+        }
+
+        function animate()
+        {
+            update();
+            checkCollisions();
+            bounding();
+            clear();
+            draw();
+        }
+
+        function clear()
+        {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function bounding()
+        {
+            var hit = false;
+
+            if (b.p.x <= b.r) { b.p.x = b.r; b.v.x *= -1; hit = true; }
+            if (b.p.y <= b.r) { b.p.y = b.r; b.v.y *= -1; hit = true; }
+            if (b.p.x >= canvas.width - b.r) { b.p.x = canvas.width - b.r; b.v.x *= -1; hit = true; }
+            if (b.p.y >= canvas.height - b.r) { b.p.y = canvas.height - b.r; b.v.y *= -1; hit = true; }
+
+            if (hit)
+            {
+                b.v = b.v.scale(1.0 - wallCollisionDampening);
+            }
+        }
+
+        function checkCollisions()
+        {
+            Collision firstCollision = null;
+        
+            // find the collision with the shortest distance
+            for (var i = 0; i < walls.length; i++)
+            {
+                var w = walls[i];
+                var c = w.checkCollision(b);
+                if (c != null)
+                {
+                    if (firstCollision == null || c.dist < firstCollision.dist)
+                    {
+                        firstCollision = c;
+                    }
+                }
+            }
+
+            // These are all possible collisions, but one had to be first
+            if (firstCollision != null)
+            {
+                resolveCollision(firstCollision);
+            }
+        }
+
+        // switch to handling Collision objects
+        function resolveCollision(w)
+        {   
+            // calculate normal and tangent vectors
+            var vn = w.norm.scale(b.v.dot(w.norm)); // the normal component of the ball's velocity
+            var vt = b.v.sub(vn); // the tangent component of the ball's velocity
+
+            // de-overlap first
+            var distance = w.distance(b.p);
+            b.p = b.p.add(b.v.scale((distance - b.r) / vn.mag()));
+
+            // calculate new velocity            
+            b.v = vt.sub(vn).scale(1.0 - wallCollisionDampening); // keep the same tangent component and reflect the normal
+        }
+
+        function update()
+        {
+            b.move(worldFriction);
+        }
+
+        function stop()
+        {
+            clearInterval(looper);
+        }
+    
+    </script>
+
+</body>
+</html>
